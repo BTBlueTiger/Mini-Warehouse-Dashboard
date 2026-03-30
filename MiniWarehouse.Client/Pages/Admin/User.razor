@@ -1,0 +1,91 @@
+@page "/admin/users"
+@using MiniWarehouse.Shared.Model
+@inject MiniWarehouse.Client.IService.IUserApiService UserApiService
+@using MudBlazor
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Userverwaltung</PageTitle>
+
+<MudCard Class="mx-auto my-4" Style="max-width:900px;">
+    <MudCardContent>
+        <MudText Typo="Typo.h5">Userverwaltung</MudText>
+            <MudTable Items="users" Hover="true" Dense="true">
+                <HeaderContent>
+                    <MudTh>Id</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Email</MudTh>
+                    <MudTh>Rolle</MudTh>
+                    <MudTh>Aktionen</MudTh>
+                    <MudTh>Letzte Interaktion</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Id">@context.Id</MudTd>
+                    <MudTd DataLabel="Name">
+                        <MudTextField @bind-Value="@context.Name" />
+                    </MudTd>
+                    <MudTd DataLabel="Email">
+                        <MudTextField @bind-Value="@context.Email" />
+                    </MudTd>
+                    <MudTd DataLabel="Rolle">
+                        <MudSelect @bind-Value="@context.Role">
+                            <MudSelectItem Value="0">User</MudSelectItem>
+                            <MudSelectItem Value="1">Admin</MudSelectItem>
+                        </MudSelect>
+                    </MudTd>
+                    <MudTd DataLabel="Aktionen">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => SaveUser(context))">Speichern</MudButton>
+                    </MudTd>
+                    <MudTd DataLabel="Letzte Interaktion">
+                        <MudTextField T="string" Value="@(context.LastInteraction.HasValue ? context.LastInteraction.Value.ToLocalTime().ToString("g") : "-")" Disabled="true" Class="mt-4" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.h6">Neuen User anlegen</MudText>
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="newUser.Name" Label="Name" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="newUser.Email" Label="Email" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudSelect @bind-Value="newUser.Role" Label="Rolle" >
+                        <MudSelectItem Value="0">User</MudSelectItem>
+                        <MudSelectItem Value="1">Admin</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CreateUser">Erstellen</MudButton>
+                </MudItem>
+            </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    private List<Shared.Model.User> users;
+    private Shared.Model.User newUser = new ();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserApiService.GetAllUsers();
+    }
+
+    private async Task SaveUser(Shared.Model.User user)
+    {
+        await UserApiService.UpdateUser(user);
+    }
+
+    private async Task CreateUser()
+    {
+        var dto = new MiniWarehouse.Shared.Dto.UserDto
+        {
+            Email = newUser.Email,
+            Role = newUser.Role
+        };
+        await UserApiService.Register(dto);
+        users = await UserApiService.GetAllUsers();
+        newUser = new Shared.Model.User();
+    }
+}

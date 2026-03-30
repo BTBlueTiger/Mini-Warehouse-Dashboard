@@ -1,0 +1,64 @@
+﻿@page "/"
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-16">
+    <MudPaper Elevation="4" Class="pa-8">        
+        <MudTabs Centered="true" Elevation="0" Rounded="true" ApplyEffectsToContainer="true">
+            <MudTabPanel Text="Login">
+                <MudForm @ref="_loginForm">
+                    <MudTextField T="string" 
+                                  @bind-Value="_loginModel.Email" 
+                                  For="@(() => _loginModel.Email)" 
+                                  Label="Email"
+                                  Variant="Variant.Outlined" 
+                                  Class="mt-4"/>
+        
+                    <MudTextField T="string" 
+                                  @bind-Value="_loginModel.Password" 
+                                  For="@(() => _loginModel.Password)" 
+                                  Label="Passwort" 
+                                  InputType="@LoginPasswordInputType"
+                                  Variant="Variant.Outlined" 
+                                  Class="mt-4"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@LoginPasswordIcon"
+                                  OnAdornmentClick="@(() => _showLoginPassword = !_showLoginPassword)" />
+        
+                    <MudButton Variant="Variant.Filled" 
+                               Disabled="@_isProcessing"
+                               Color="Color.Primary" 
+                               FullWidth="true" 
+                               OnClick="Login" 
+                               Class="mt-6">Anmelden
+                        </MudButton>
+                </MudForm>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Registrieren">
+                <MudForm @ref="_registerForm">
+                    <MudTextField T="string" 
+                                  @bind-Value="_registerModel.Email" 
+                                  Label="Email" 
+                                  Variant="Variant.Outlined" 
+                                  Class="mt-4"/>
+                    
+                    <MudTextField T="string" 
+                                  @bind-Value="_registerModel.Password" 
+                                  Label="Passwort" 
+                                  InputType="@RegisterPasswordInputType"
+                                  Variant="Variant.Outlined" 
+                                  Class="mt-4"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@RegisterPasswordIcon"
+                                  OnAdornmentClick="@(() => _showRegisterPassword = !_showRegisterPassword)" />
+                    
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Secondary" 
+                               FullWidth="true" 
+                               OnClick="Register" 
+                               Class="mt-6">Account erstellen
+                        </MudButton>
+                </MudForm>
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
+</MudContainer>
