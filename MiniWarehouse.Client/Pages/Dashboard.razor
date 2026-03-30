@@ -1,0 +1,86 @@
+@page "/dashboard"
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudGrid>
+        <MudItem xs="12" sm="7">
+            <MudPaper Elevation="4" Class="pa-8" Style="height: 400px;">
+                <MudText Typo="Typo.h4" GutterBottom="true">Lagerstatus</MudText>
+                <MudDivider Class="my-4" />
+                <MudText Typo="Typo.body1">Systemzustand: <b>Bereit</b></MudText>
+                
+                <MudChart ChartType="ChartType.Donut" 
+                          T="double" 
+                          InputData="@_chartData" 
+                          InputLabels="@_chartLabels" 
+                          Width="200px" 
+                          Height="200px" />
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="5">
+            <MudPaper Elevation="2" Class="pa-4" Style="height: 400px; display: flex; flex-direction: column; border-top: 4px solid #da0578;">
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mb-3 d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.History" Color="Color.Default" Class="mr-2" />
+                    Ereignisprotokoll
+                </MudText>
+        
+                <div style="flex-grow: 1; overflow-y: auto;">
+                    <MudSimpleTable Hover="true" Dense="true" FixedHeader="true" Style="height: 100%">
+                        <thead>
+                        <tr>
+                            <th style="width: 80px">Zeit</th>
+                            <th>Aktion</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var log in _logs.AsEnumerable().Reverse())
+                        {
+                            <tr>
+                                <td style="color: #999; font-size: 0.8rem">@log.Time</td>
+                                <td style="font-size: 0.9rem">@log.Message</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </MudSimpleTable>
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private HubConnection? _hubConnection;
+    private List<(string Time, string Message)> _logs = new();
+    private double[] _chartData = { 25, 75 };
+    private string[] _chartLabels = { "Belegt", "Frei" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Verbindung zum Nginx-Proxy (/api/ ist unser Tunnel zur API)
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/api/warehousehub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        _hubConnection.On<string, string, string>("ReceiveUpdate", (msg, type, time) =>
+        {
+            _logs.Add((time, msg));
+            if (_logs.Count > 10) _logs.RemoveAt(0);
+            
+            // UI Thread benachrichtigen
+            InvokeAsync(StateHasChanged);
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection is not null) await _hubConnection.DisposeAsync();
+    }
+}

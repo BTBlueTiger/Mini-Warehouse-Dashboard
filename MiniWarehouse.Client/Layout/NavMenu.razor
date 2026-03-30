@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<MudDrawer Elevation="1" Variant="DrawerVariant.Responsive" Open="true" Class="mud-width-260">
+    <MudDrawerHeader>
+        <MudText Typo="Typo.h6" Class="ml-2">MiniWarehouse</MudText>
+    </MudDrawerHeader>
+    <MudNavMenu>
+        <AuthorizeView>
+            <Authorized>
+                <MudNavGroup Title="Allgemein" Icon="@Icons.Material.Filled.Menu" Expanded="true">
+                    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+                    <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+                    <MudNavLink Href="/profile" Icon="@Icons.Material.Filled.AccountCircle">Profil</MudNavLink>
+                </MudNavGroup>
+                <AuthorizeView Roles="Admin" Context="adminContext">
+                    <MudNavGroup Title="Admin" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="true">
+                        <MudNavLink Href="/admin/users" Icon="@Icons.Material.Filled.Group">User</MudNavLink>
+                    </MudNavGroup>
+                </AuthorizeView>
+                <MudNavGroup Title="Aktionen" Icon="@Icons.Material.Filled.ExitToApp" Expanded="true">
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Logout</MudMenuItem>
+                </MudNavGroup>
+            </Authorized>
+            <NotAuthorized>
+                <MudNavLink Href="/" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Einloggen</MudNavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudNavMenu>
+</MudDrawer>
+

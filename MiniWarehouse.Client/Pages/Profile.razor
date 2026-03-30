@@ -1,0 +1,93 @@
+@page "/profile"
+@using Microsoft.AspNetCore.Components.Authorization
+@using MiniWarehouse.Client.IService
+@using MiniWarehouse.Shared.Model
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject IAuthService AuthService
+@inject IUserApiService UserApiService
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudPaper Elevation="4" Class="pa-8">
+        <MudText Typo="Typo.h4">Profil</MudText>
+        <MudForm @ref="_form">
+            <MudTextField T="string" Label="E-Mail" @bind-Value="_model.Email" Required="true" Disabled="true" Class="mt-4" />
+            <MudTextField T="string" Label="Name" @bind-Value="_model.Name" Required="true" Class="mt-4" />
+            <MudTextField T="string" Label="Telefonnummer" @bind-Value="_model.PhoneNumber" Class="mt-4" />
+            <MudTextField T="string" Label="Rolle" Value="@(_model.Role == 1 ? "Admin" : "User")" Disabled="true" Class="mt-4" />
+            <MudTextField T="string" Label="Letzte Interaktion" Value="@(_model.LastInteraction.HasValue ? _model.LastInteraction.Value.ToLocalTime().ToString("g") : "-")" Disabled="true" Class="mt-4" />
+            <MudStack Row="true" Spacing="2" Class="mt-6">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save" Disabled="_isProcessing">Speichern</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Reset" Disabled="_isProcessing">Zurücksetzen</MudButton>
+            </MudStack>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm _form;
+    private User _model = new();
+    private User _original = new();
+    private bool _isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userDto = await AuthService.AuthMe();
+
+        _model = await UserApiService.GetUserByEmail(userDto.Email);
+        _original = new User
+        {
+            Id = _model.Id,
+            Email = _model.Email,
+            Name = _model.Name,
+            PhoneNumber = _model.PhoneNumber,
+            LastInteraction = _model.LastInteraction,
+            Role = _model.Role
+        };
+    
+    }
+
+    private async Task Save()
+    {
+        await _form.ValidateAsync();
+        if (!_form.IsValid) return;
+        _isProcessing = true;
+        try
+        {
+            var updated = await UserApiService.UpdateUser(_model);
+            Snackbar.Add("Profil gespeichert!", Severity.Success);
+            _original = new User
+            {
+                Id = updated.Id,
+                Email = updated.Email,
+                Name = updated.Name,
+                PhoneNumber = updated.PhoneNumber,
+                LastInteraction = updated.LastInteraction,
+                Role = updated.Role
+            };
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Fehler beim Speichern: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private void Reset()
+    {
+        _model = new User
+        {
+            Id = _original.Id,
+            Email = _original.Email,
+            Name = _original.Name,
+            PhoneNumber = _original.PhoneNumber,
+            LastInteraction = _original.LastInteraction,
+            Role = _original.Role
+        };
+    }
+
+}

@@ -1,11 +1,9 @@
-# Build results
+## --- .NET / Visual Studio ---
 bin/
 obj/
 out/
 TestResults/
 coverage/
-
-# User-specific files
 .vs/
 .vscode/
 *.user
@@ -13,23 +11,49 @@ coverage/
 *.userosscache
 *.sln.docstates
 
-# Paket-Cache
+## --- NuGet ---
 packages/
 .nuget/
+# Verhindert, dass Rider/VS den lokalen HTTP-Cache eincheckt
+.http/ 
 
-# Logs and temp
-*.log
-*.tmp
-*.temp
+## --- Blazor WASM ---
+wwwroot/service-worker-assets.js
+_framework/
 
-# Docker
+## --- Docker ---
 docker-compose.override.yml
+# Falls du Docker-Volumes lokal speicherst:
+.docker-volumes/
 
-# Environment/Secrets
+## --- Environment & Secrets (EXTREM WICHTIG) ---
 .env
 .env.*
 appsettings.Development.json
+# Falls du User Secrets nutzt:
+secrets.json
 
-# OS-specific
+## --- OS / IDE ---
 .DS_Store
 Thumbs.db
+.idea/
+*.iml
+
+## --- Logs ---
+*.log
+# Databases (SQLite)
+*.db
+*.db-shm
+*.db-wal
+
+*.nuget.cache
+*.dgspec.json
+*.g.props
+*.g.targets
+*.packageref.props
+*.packageref.targets
+project.assets.json
+project.packagespec.json
+rider.project.model.nuget.info
+rider.project.restore.info
+*.sln.iml

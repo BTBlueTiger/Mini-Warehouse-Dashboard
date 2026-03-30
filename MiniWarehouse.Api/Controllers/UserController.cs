@@ -6,123 +6,84 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniWarehouse.Api.Data;
-using MiniWarehouse.Api.Model;
+using MiniWarehouse.Shared.Model;
+using MiniWarehouse.Shared.Dto;
 using Microsoft.AspNetCore.Identity;
-using MiniWarehouse.Api.Model.Dto;
+using MiniWarehouse.Api.IService;
+using MiniWarehouse.Api.Service;
 
 namespace MiniWarehouse.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(DatabaseContext context, IPasswordHasher<User> passwordHasher) : ControllerBase
+    public class UserController(IUserService userService, IAuthService authService) : ControllerBase
     {
-        private readonly DatabaseContext _context = context;
-            private readonly IPasswordHasher<User> _passwordHasher = passwordHasher;
-
         // GET: api/User
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
-            return await _context.User.ToListAsync();
+            return Ok(await userService.GetUsersAsync());
         }
 
         // GET: api/User/5
-        [HttpGet("{id}")]
+        [HttpGet("byId/{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.User.FindAsync(id);
+            var user = await userService.GetUserByIdAsync(id);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+            return user == null ? NotFound() : Ok(user);
+        }
 
-            return user;
+        // GET: api/User/x@web.de
+        [HttpGet("byMail/{email}")]
+        public async Task<ActionResult<User>> GetUserByEmail(string email)
+        {
+            var user = await userService.GetUserByEmail(email);
+
+            return user == null ? NotFound() : Ok(user);
         }
 
         // PUT: api/User/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<ActionResult<User>> PutUser(int id, User user)
         {
             if (id != user.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
+            User? result = await userService.UpdateUserAsync(id, user);
+            if (result == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
-            return NoContent();
+            return Ok(result);
         }
 
         // POST: api/User
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("register")]
-        public async Task<ActionResult<User>> PostUser([FromBody] UserRegisterDto  userDto)
+        public async Task<ActionResult<User>> PostUser([FromBody] UserDto userDto)
         {
-            var user = new User
+            var user = await userService.AddUserAsync(userDto);
+            if (user == null)
             {
-                Email = userDto.Email,
-                PasswordHash = _passwordHasher.HashPassword(new User { Email = userDto.Email }, userDto.Password) // Hash the password before saving
-            };
-
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
-
+                return BadRequest("User could not be created.");
+            }
             return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
-
         // DELETE: api/User/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.User.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.User.Remove(user);
-            await _context.SaveChangesAsync();
-
+            await userService.DeleteUserAsync(id);
             return NoContent();
         }
 
-        private bool UserExists(int id)
-        {
-            return _context.User.Any(e => e.Id == id);
-        }
-
         [NonAction]
-        public bool ValidateUser(User user, string providedPassword)
-        {
-            if (user.PasswordHash == null)
-            {
-                return false;
-            }
-            // Verify the password
-            var result = _passwordHasher.VerifyHashedPassword(
-                user,
-                user.PasswordHash,
-                providedPassword
-            );
-            return result == PasswordVerificationResult.Success;
-        }
+        public bool ValidateUser(User user, string providedPassword) => 
+            userService.ValidateUser(user, providedPassword);
     }
 }

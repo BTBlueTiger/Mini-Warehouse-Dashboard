@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: MiniWarehouse.Api/Dockerfile
+    networks:
+      - warehouse-net
+
+  client:
+    build:
+      context: .
+      dockerfile: MiniWarehouse.Client/Dockerfile
+    ports:
+      - "5164:80"  
+    depends_on:
+      - api
+    networks:
+      - warehouse-net
+
+networks:
+  warehouse-net:
+    driver: bridge

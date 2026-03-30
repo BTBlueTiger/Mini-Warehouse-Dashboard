@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MiniWarehouse.Api.Model;
+using MiniWarehouse.Shared.Model;
 
 namespace MiniWarehouse.Api.Data;
 
@@ -9,4 +9,5 @@ public class DatabaseContext : DbContext
         : base(options) { }
 
     public DbSet<User> User { get; set; } = default!;
+    public DbSet<UserTokenEvent> UserTokenEvent { get; set; } = default!;
 }
