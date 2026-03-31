@@ -1,12 +1,12 @@
 # Mini-Warehouse Dashboard (3-Tages-Demo)
 
-**Hinweis:** Dies ist ein reines 3-Tages-Demonstrationsprojekt. Es dient ausschließlich zu Lern- und Präsentationszwecken und enthält bewusst Schwächen, wie z.B. einen hardcodierten JWT-Key und vereinfachte Sicherheitsmechanismen. Für produktive Umgebungen ist es nicht geeignet!
+**Hinweis:** Dies ist ein reines 3-Tages-Demonstrationsprojekt. Es dient ausschließlich zu Lern- und Präsentationszwecken und enthält bewusst Schwächen, wie z.B. einen hardcodierten JWT-Key und vereinfachte Sicherheitsmechanismen. Für produktive Umgebungen ist es nicht geeignet! 
 
 ---
 
 ## Überblick
 
-Ein modernes, voll funktionsfähiges Lagerverwaltungs-Dashboard mit .NET 8, Blazor, SignalR, JWT-Authentifizierung und rollenbasiertem Zugriff.
+Ein modernes, funktionsfähiges Lagerverwaltungs-Dashboard mit .NET 8, Blazor, SignalR, JWT-Authentifizierung und rollenbasiertem Zugriff.
 
 ---
 
@@ -21,13 +21,13 @@ Ein modernes, voll funktionsfähiges Lagerverwaltungs-Dashboard mit .NET 8, Blaz
 		- **User** hat Zugriff auf Standardfunktionen.
 
 - **Live-Dashboard:**
-	- Das Dashboard zeigt Lagerbewegungen in Echtzeit per SignalR (Websockets).
+	- Das Dashboard zeigt Lagerbewegungen in Echtzeit per SignalR (Websockets). (Simulation)
 
 - **User-Verwaltung (nur Admin):**
-	- Admins können alle Nutzer einsehen und verwalten.
+	- Admins können alle Nutzer einsehen und verwalten. (Light)
 
 - **Profilseite:**
-	- Jeder Nutzer kann sein Profil einsehen und bearbeiten.
+	- Jeder Nutzer kann sein Profil einsehen und bearbeiten. Nur das Passwort nicht.
 
 - **Settings:**
 	- Nutzer können zwischen Light- und Dark-Mode wechseln.
@@ -40,12 +40,13 @@ Ein modernes, voll funktionsfähiges Lagerverwaltungs-Dashboard mit .NET 8, Blaz
 	- Das Projekt kann komplett mit Docker Compose gestartet werden.
 
 - **Tests:**
-	- Es gibt Unit- und Integrationstests für die wichtigsten Services.
+	- Es gibt erste Unit- und Integrationstests.
 
 ---
 
 ## Seitenübersicht
 
+####  Nur eingeloggt erreichbar.
 - **/dashboard**  
 	Live-Ansicht der Lagerbewegungen (SignalR).
 - **/admin/users**  
@@ -54,6 +55,7 @@ Ein modernes, voll funktionsfähiges Lagerverwaltungs-Dashboard mit .NET 8, Blaz
 	Profilseite für den eingeloggten User.
 - **/settings**  
 	Einstellungen inkl. DarkMode.
+####  Nur uneingeloggt erreichbar.
 - **/**  
 	Login- und Registrierungsseite.
 
@@ -77,7 +79,7 @@ cd Mini-Warehouse-Dashboard
 docker compose up --build
 ```
 
-- Die Anwendung ist dann unter `http://localhost:5000` (API) und `http://localhost:8080` (Client) erreichbar.
+- Die Anwendung ist dann unter `http://localhost:5000` (API, nicht unter Docker) und `http://localhost:8080` (Client) erreichbar.
 - Standard-Admin:  
 	- **E-Mail:** admin@MiniWarehouse.com  
 	- **Passwort:** admin@MiniWarehouse.com
@@ -89,7 +91,6 @@ docker compose up --build
 - JWT wird als httpOnly-Cookie gesetzt (sicher gegen XSS).
 - Die Navigation passt sich automatisch der Rolle an.
 - Das System ist erweiterbar für weitere Rollen und Features.
-- Alle sensiblen Daten sind in `.env` und `appsettings.Development.json` ausgelagert (siehe .gitignore).
 - **Schwächen:** Hardcodierter JWT-Key, keine 2FA, keine E-Mail-Bestätigung, keine produktive Security-Konfiguration.
 
 ---
